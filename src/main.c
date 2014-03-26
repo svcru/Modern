@@ -30,11 +30,9 @@ static InverterLayer *full_inverse_layer;
 static Layer *background_layer;
 static Layer *window_layer;
 
-const GPathInfo MINUTE_HAND_PATH_POINTS = { 4, (GPoint[] ) { { -4, 15 },
-				{ 4, 15 }, { 4, -70 }, { -4, -70 }, } };
+const GPathInfo MINUTE_HAND_PATH_POINTS = { 4, (GPoint[] ) { { -4, 15 }, { 4, 15 }, { 4, -70 }, { -4, -70 }, } };
 
-const GPathInfo HOUR_HAND_PATH_POINTS = { 4, (GPoint[] ) { { -4, 15 },
-				{ 4, 15 }, { 4, -50 }, { -4, -50 }, } };
+const GPathInfo HOUR_HAND_PATH_POINTS = { 4, (GPoint[] ) { { -4, 15 }, { 4, 15 }, { 4, -50 }, { -4, -50 }, } };
 
 static GPath *hour_hand_path;
 static GPath *minute_hand_path;
@@ -53,33 +51,30 @@ int32_t second_angle_anim = 0;
 unsigned int minute_angle_anim = 0;
 unsigned int hour_angle_anim = 0;
 
-void handle_timer(void* vdata) {
-
+void handle_timer(void* vdata){
 	int *data = (int *) vdata;
-
-	if (*data == my_cookie) {
-		if (init_anim == ANIM_START) {
+	if (*data == my_cookie){
+		if (init_anim == ANIM_START){
 			init_anim = ANIM_HOURS;
-			timer_handle = app_timer_register(50 /* milliseconds */,
-					&handle_timer, &my_cookie);
-		} else if (init_anim == ANIM_HOURS) {
+			timer_handle = app_timer_register(50 /* milliseconds */, &handle_timer, &my_cookie);
+		}
+		else if (init_anim == ANIM_HOURS) {
 			layer_mark_dirty(hour_display_layer);
-			timer_handle = app_timer_register(50 /* milliseconds */,
-					&handle_timer, &my_cookie);
-		} else if (init_anim == ANIM_MINUTES) {
+			timer_handle = app_timer_register(50 /* milliseconds */, &handle_timer, &my_cookie);
+		}
+		else if (init_anim == ANIM_MINUTES) {
 			layer_mark_dirty(minute_display_layer);
-			timer_handle = app_timer_register(50 /* milliseconds */,
-					&handle_timer, &my_cookie);
-		} else if (init_anim == ANIM_SECONDS) {
+			timer_handle = app_timer_register(50 /* milliseconds */, &handle_timer, &my_cookie);
+		}
+		else if (init_anim == ANIM_SECONDS){
 			layer_mark_dirty(second_display_layer);
-			timer_handle = app_timer_register(50 /* milliseconds */,
-					&handle_timer, &my_cookie);
+			timer_handle = app_timer_register(50 /* milliseconds */, &handle_timer, &my_cookie);
 		}
 	}
-
+	vibes_double_pulse();
 }
 
-void second_display_layer_update_callback(Layer *me, GContext* ctx) {
+void second_display_layer_update_callback(Layer *me, GContext* ctx){
 	(void) me;
 
 	time_t now = time(NULL);
@@ -90,21 +85,24 @@ void second_display_layer_update_callback(Layer *me, GContext* ctx) {
 	GPoint center = grect_center_point(&GRECT_FULL_WINDOW);
 	GPoint second = GPoint(center.x, center.y - second_hand_length);
 
-	if (init_anim < ANIM_SECONDS) {
+	if (init_anim < ANIM_SECONDS){
 		second = GPoint(center.x, center.y - 70);
-	} else if (init_anim == ANIM_SECONDS) {
+	}
+	else if (init_anim == ANIM_SECONDS){
 		second_angle_anim += 0xffff / 60;
-		if (second_angle_anim >= second_angle) {
+		if (second_angle_anim >= second_angle){
 			init_anim = ANIM_DONE;
 			second =
 					GPoint(center.x + second_hand_length * sin_lookup(second_angle)/0xffff,
 							center.y + (-second_hand_length) * cos_lookup(second_angle)/0xffff);
-		} else {
+		}
+		else{
 			second =
 					GPoint(center.x + second_hand_length * sin_lookup(second_angle_anim)/0xffff,
 							center.y + (-second_hand_length) * cos_lookup(second_angle_anim)/0xffff);
 		}
-	} else {
+	}
+	else{
 		second =
 				GPoint(center.x + second_hand_length * sin_lookup(second_angle)/0xffff,
 						center.y + (-second_hand_length) * cos_lookup(second_angle)/0xffff);
@@ -115,7 +113,7 @@ void second_display_layer_update_callback(Layer *me, GContext* ctx) {
 	graphics_draw_line(ctx, center, second);
 }
 
-void center_display_layer_update_callback(Layer *me, GContext* ctx) {
+void center_display_layer_update_callback(Layer *me, GContext* ctx){
 	(void) me;
 
 	GPoint center = grect_center_point(&GRECT_FULL_WINDOW);
@@ -125,7 +123,7 @@ void center_display_layer_update_callback(Layer *me, GContext* ctx) {
 	graphics_fill_circle(ctx, center, 3);
 }
 
-void minute_display_layer_update_callback(Layer *me, GContext* ctx) {
+void minute_display_layer_update_callback(Layer *me, GContext* ctx){
 	(void) me;
 
 	time_t now = time(NULL);
@@ -133,13 +131,15 @@ void minute_display_layer_update_callback(Layer *me, GContext* ctx) {
 
 	unsigned int angle = t->tm_min * 6 + t->tm_sec / 10;
 
-	if (init_anim < ANIM_MINUTES) {
+	if (init_anim < ANIM_MINUTES){
 		angle = 0;
-	} else if (init_anim == ANIM_MINUTES) {
+	}
+	else if (init_anim == ANIM_MINUTES){
 		minute_angle_anim += 6;
-		if (minute_angle_anim >= angle) {
+		if (minute_angle_anim >= angle){
 			init_anim = ANIM_SECONDS;
-		} else {
+		}
+		else {
 			angle = minute_angle_anim;
 		}
 	}
@@ -153,7 +153,7 @@ void minute_display_layer_update_callback(Layer *me, GContext* ctx) {
 	gpath_draw_outline(ctx, minute_hand_path);
 }
 
-void hour_display_layer_update_callback(Layer *me, GContext* ctx) {
+void hour_display_layer_update_callback(Layer *me, GContext* ctx){
 	(void) me;
 
 	time_t now = time(NULL);
@@ -161,14 +161,14 @@ void hour_display_layer_update_callback(Layer *me, GContext* ctx) {
 
 	unsigned int angle = t->tm_hour * 30 + t->tm_min / 2;
 
-	if (init_anim < ANIM_HOURS) {
+	if (init_anim < ANIM_HOURS){
 		angle = 0;
-	} else if (init_anim == ANIM_HOURS) {
-		if (hour_angle_anim == 0 && t->tm_hour >= 12) {
+	} else if (init_anim == ANIM_HOURS){
+		if (hour_angle_anim == 0 && t->tm_hour >= 12){
 			hour_angle_anim = 360;
 		}
 		hour_angle_anim += 6;
-		if (hour_angle_anim >= angle) {
+		if (hour_angle_anim >= angle){
 			init_anim = ANIM_MINUTES;
 		} else {
 			angle = hour_angle_anim;
@@ -184,36 +184,30 @@ void hour_display_layer_update_callback(Layer *me, GContext* ctx) {
 	gpath_draw_outline(ctx, hour_hand_path);
 }
 
-void draw_date() {
-
+void draw_date(){
 	time_t now = time(NULL);
 	struct tm *t = localtime(&now);
-
 	strftime(date_text, sizeof(date_text), "%a %d", t);
-
 	text_layer_set_text(date_layer, date_text);
 }
 
 /*
  * Battery icon callback handler
  */
-void battery_layer_update_callback(Layer *layer, GContext *ctx) {
-
-  graphics_context_set_compositing_mode(ctx, GCompOpAssign);
-
-  if (!battery_plugged) {
-    graphics_draw_bitmap_in_rect(ctx, icon_battery, GRect(0, 0, 24, 12));
-    graphics_context_set_stroke_color(ctx, GColorBlack);
-    graphics_context_set_fill_color(ctx, GColorWhite);
-    graphics_fill_rect(ctx, GRect(7, 4, (uint8_t)((battery_level / 100.0) * 11.0), 4), 0, GCornerNone);
-  } else {
-    graphics_draw_bitmap_in_rect(ctx, icon_battery_charge, GRect(0, 0, 24, 12));
-  }
+void battery_layer_update_callback(Layer *layer, GContext *ctx){
+	graphics_context_set_compositing_mode(ctx, GCompOpAssign);
+	if (!battery_plugged){
+		graphics_draw_bitmap_in_rect(ctx, icon_battery, GRect(0, 0, 24, 12));
+		graphics_context_set_stroke_color(ctx, GColorBlack);
+		graphics_context_set_fill_color(ctx, GColorWhite);
+		graphics_fill_rect(ctx, GRect(7, 4, (uint8_t)((battery_level / 100.0) * 11.0), 4), 0, GCornerNone);
+	}
+	else{
+		graphics_draw_bitmap_in_rect(ctx, icon_battery_charge, GRect(0, 0, 24, 12));
+	}
 }
 
-
-
-void battery_state_handler(BatteryChargeState charge) {
+void battery_state_handler(BatteryChargeState charge){
 	battery_level = charge.charge_percent;
 	battery_plugged = charge.is_plugged;
 	layer_mark_dirty(battery_layer);
@@ -228,26 +222,34 @@ void battery_state_handler(BatteryChargeState charge) {
 /*
  * Bluetooth icon callback handler
  */
-void bt_layer_update_callback(Layer *layer, GContext *ctx) {
-  if (bt_ok)
-  	graphics_context_set_compositing_mode(ctx, GCompOpAssign);
-  else
-  	graphics_context_set_compositing_mode(ctx, GCompOpClear);
-  graphics_draw_bitmap_in_rect(ctx, icon_bt, GRect(0, 0, 9, 12));
+void bt_layer_update_callback(Layer *layer, GContext *ctx){
+	if (bt_ok)
+		graphics_context_set_compositing_mode(ctx, GCompOpAssign);
+	else
+		graphics_context_set_compositing_mode(ctx, GCompOpClear);
+	graphics_draw_bitmap_in_rect(ctx, icon_bt, GRect(0, 0, 9, 12));
 }
 
-void bt_connection_handler(bool connected) {
+void bt_connection_handler(bool connected){
 	bt_ok = connected;
+	if (!connected){
+		// своя схема вибрилки при потере коннекта
+		static const uint32_t const segments[] = {100, 100, 100, 100, 100};
+		VibePattern pat = {
+			.durations = segments,
+			.num_segments = ARRAY_LENGTH(segments),
+		};
+		vibes_enqueue_custom_pattern(pat);	
+	}
 	layer_mark_dirty(bt_layer);
 }
 
-void draw_background_callback(Layer *layer, GContext *ctx) {
+void draw_background_callback(Layer *layer, GContext *ctx){
 	graphics_context_set_compositing_mode(ctx, GCompOpAssign);
-	graphics_draw_bitmap_in_rect(ctx, background_image_container,
-			GRECT_FULL_WINDOW);
+	graphics_draw_bitmap_in_rect(ctx, background_image_container, GRECT_FULL_WINDOW);
 }
 
-void init() {
+void init(){
 
 	// Window
 	window = window_create();
@@ -255,8 +257,7 @@ void init() {
 	window_layer = window_get_root_layer(window);
 
 	// Background image
-	background_image_container = gbitmap_create_with_resource(
-			RESOURCE_ID_IMAGE_BACKGROUND);
+	background_image_container = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
 	background_layer = layer_create(GRECT_FULL_WINDOW);
 	layer_set_update_proc(background_layer, &draw_background_callback);
 	layer_add_child(window_layer, background_layer);
@@ -279,41 +280,37 @@ void init() {
 	BatteryChargeState initial = battery_state_service_peek();
 	battery_level = initial.charge_percent;
 	battery_plugged = initial.is_plugged;
-	battery_layer = layer_create(GRect(50,56,24,12)); //24*12
+	battery_layer = layer_create(GRect(50, 56, 24, 12)); //24*12
 	layer_set_update_proc(battery_layer, &battery_layer_update_callback);
 	layer_add_child(window_layer, battery_layer);
 
 
 	bt_ok = bluetooth_connection_service_peek();
-	bt_layer = layer_create(GRect(83,56,9,12)); //9*12
+	bt_layer = layer_create(GRect(83, 56, 9, 12)); //9*12
 	layer_set_update_proc(bt_layer, &bt_layer_update_callback);
 	layer_add_child(window_layer, bt_layer);
 
 	// Hands setup
 	hour_display_layer = layer_create(GRECT_FULL_WINDOW);
-	layer_set_update_proc(hour_display_layer,
-			&hour_display_layer_update_callback);
+	layer_set_update_proc(hour_display_layer, &hour_display_layer_update_callback);
 	layer_add_child(window_layer, hour_display_layer);
 
 	hour_hand_path = gpath_create(&HOUR_HAND_PATH_POINTS);
 	gpath_move_to(hour_hand_path, grect_center_point(&GRECT_FULL_WINDOW));
 
 	minute_display_layer = layer_create(GRECT_FULL_WINDOW);
-	layer_set_update_proc(minute_display_layer,
-			&minute_display_layer_update_callback);
+	layer_set_update_proc(minute_display_layer,	&minute_display_layer_update_callback);
 	layer_add_child(window_layer, minute_display_layer);
 
 	minute_hand_path = gpath_create(&MINUTE_HAND_PATH_POINTS);
 	gpath_move_to(minute_hand_path, grect_center_point(&GRECT_FULL_WINDOW));
 
 	center_display_layer = layer_create(GRECT_FULL_WINDOW);
-	layer_set_update_proc(center_display_layer,
-			&center_display_layer_update_callback);
+	layer_set_update_proc(center_display_layer, &center_display_layer_update_callback);
 	layer_add_child(window_layer, center_display_layer);
 
 	second_display_layer = layer_create(GRECT_FULL_WINDOW);
-	layer_set_update_proc(second_display_layer,
-			&second_display_layer_update_callback);
+	layer_set_update_proc(second_display_layer, &second_display_layer_update_callback);
 	layer_add_child(window_layer, second_display_layer);
 
 	// Configurable inverse
@@ -324,8 +321,7 @@ void init() {
 
 }
 
-void deinit() {
-
+void deinit(){
 	window_destroy(window);
 	gbitmap_destroy(background_image_container);
 	gbitmap_destroy(icon_battery);
@@ -350,51 +346,46 @@ void deinit() {
 	gpath_destroy(minute_hand_path);
 }
 
-void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
-
-	if (init_anim == ANIM_IDLE) {
+void handle_tick(struct tm *tick_time, TimeUnits units_changed){
+	if (init_anim == ANIM_IDLE){
 		init_anim = ANIM_START;
-		timer_handle = app_timer_register(50 /* milliseconds */, &handle_timer,
-				&my_cookie);
-	} else if (init_anim == ANIM_DONE) {
-		if (tick_time->tm_sec % 10 == 0) {
+		timer_handle = app_timer_register(50 /* milliseconds */, &handle_timer, &my_cookie);
+	}
+	else if (init_anim == ANIM_DONE){
+		if (tick_time->tm_sec % 10 == 0){
 			layer_mark_dirty(minute_display_layer);
-
-			if (tick_time->tm_sec == 0) {
-				if (tick_time->tm_min % 2 == 0) {
+			if (tick_time->tm_sec == 0){
+				if (tick_time->tm_min % 2 == 0){
 					layer_mark_dirty(hour_display_layer);
-					if (tick_time->tm_min == 0 && tick_time->tm_hour == 0) {
+					if (tick_time->tm_min == 0 && tick_time->tm_hour == 0){
 						draw_date();
 					}
 				}
 			}
 		}
-
 		layer_mark_dirty(second_display_layer);
 	}
 }
 
-void conserve_power(bool conserve) {
+void conserve_power(bool conserve){
 	if (conserve == g_conserve)
 		return;
 	g_conserve = conserve;
-	if (conserve) {
-		tick_timer_service_unsubscribe();
+	tick_timer_service_unsubscribe();
+	if (conserve){
 		tick_timer_service_subscribe(MINUTE_UNIT, &handle_tick);
 		layer_set_hidden(second_display_layer, true);
-	} else {
-		tick_timer_service_unsubscribe();
+	}
+	else{
 		tick_timer_service_subscribe(SECOND_UNIT, &handle_tick);
 		layer_set_hidden(second_display_layer, false);
 	}
 }
 
-
-
 /*
  * Main - or main as it is known
  */
-int main(void) {
+int main(void){
 	init();
 	tick_timer_service_subscribe(SECOND_UNIT, &handle_tick);
 	bluetooth_connection_service_subscribe(&bt_connection_handler);
@@ -405,4 +396,3 @@ int main(void) {
 	app_event_loop();
 	deinit();
 }
-
